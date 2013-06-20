@@ -121,7 +121,7 @@ class Uploadr:
 
     token = None
     perms = ""
-    TOKEN_FILE = "/Users/macbookair/flickr/.flickrToken"
+    TOKEN_FILE = os.path.expanduser("~/flickr/.flickrToken")
 
     def __init__( self ):
         """ Constructor
@@ -158,7 +158,7 @@ class Uploadr:
         print("Getting new Token")
         self.getFrob()
         self.getAuthKey()
-        self.getToken()   
+        self.getToken()
         self.cacheToken()
 
     def getFrob( self ):
@@ -174,8 +174,8 @@ class Uploadr:
         api.key (Required)
         Your API application key. See here for more details.     
         """
-    
-        d = { 
+
+        d = {
             api.method  : "flickr.auth.getFrob"
             }
         sig = self.signCall( d )
@@ -195,12 +195,9 @@ class Uploadr:
         sig = self.signCall( d )
         url = self.urlGen( api.auth, d, sig )
         ans = ""
-        try:
-            webbrowser.open( url )
-            ans = raw_input("Have you authenticated this application? (Y/N): ")
-        except:
-            print(str(sys.exc_info()))
-        if ( ans.lower() == "n" ):
+
+	if False:
+	    webbrowser.open( url )
             print("You need to allow this program to access your Flickr site.")
             print("A web browser should pop open with instructions.")
             print("After you have allowed access restart uploadr.py")
@@ -233,16 +230,13 @@ class Uploadr:
         }
         sig = self.signCall( d )
         url = self.urlGen( api.rest, d, sig )
-        try:
-            res = self.getResponse( url )
-            if ( self.isGood( res ) ):
-                self.token = str(res.auth.token)
-                self.perms = str(res.auth.perms)
-                self.cacheToken()
-            else :
-                self.reportError( res )
-        except:
-            print(str(sys.exc_info()))
+	res = self.getResponse( url )
+	if ( self.isGood( res ) ):
+	    self.token = str(res.auth.token)
+	    self.perms = str(res.auth.perms)
+	    self.cacheToken()
+	else :
+	    self.reportError( res )
 
     def getCachedToken( self ): 
         """
@@ -289,16 +283,13 @@ class Uploadr:
             }
             sig = self.signCall( d )
             url = self.urlGen( api.rest, d, sig )     
-            try:
-                res = self.getResponse( url ) 
-                if ( self.isGood( res ) ):
-                    self.token = res.auth.token
-                    self.perms = res.auth.perms
-                    return True
-                else :
-                    self.reportError( res )
-            except:
-                print(str(sys.exc_info()))
+	    res = self.getResponse( url ) 
+	    if ( self.isGood( res ) ):
+		self.token = res.auth.token
+		self.perms = res.auth.perms
+		return True
+	    else :
+		self.reportError( res )
             return False
 
     def upload( self ):
@@ -440,7 +431,7 @@ class Uploadr:
         try:
             print("Error:", str( res.err('code') + " " + res.err('msg') ))
         except:
-            print("Error: " + str( res ))
+            logging.exception('Error')
 
     def getResponse( self, url ):
         """
